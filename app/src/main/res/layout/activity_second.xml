@@ -13,19 +13,28 @@
         android:padding="16dp">
     </FrameLayout>
     <Button
-        android:id="@+id/btn_draw_splines"
+        android:id="@+id/draw_splines"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/drawing_container"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Соединить точки" />
+        android:text="@string/connect_points" />
     <Button
-        android:id="@+id/btn_draw_anti"
+        android:id="@+id/delete_points"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btn_draw_splines"
+        android:layout_below="@id/draw_splines"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Соединить точки" />
+        android:text="@string/remove_points" />
+
+    <Button
+        android:id="@+id/to_lines"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/draw_splines"
+        android:layout_marginTop="73dp"
+        android:text="@string/to_lines" />
+
 </RelativeLayout>

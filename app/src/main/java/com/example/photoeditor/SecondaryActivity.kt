@@ -10,86 +10,29 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import android.graphics.Path
 
 class DrawingView(context: Context) : View(context) {
     private val paint = Paint().apply {
         color = Color.BLACK
+        isAntiAlias = true
         strokeWidth = 10f
         style = Paint.Style.FILL }
     private val linepaint = Paint().apply {
         color = Color.BLACK
         strokeWidth = 5f
         style = Paint.Style.STROKE
+        isAntiAlias = true
+    }
+    private val splinepaint = Paint().apply {
+        color = Color.GREEN
+        strokeWidth = 5f
+        style = Paint.Style.FILL
+        isAntiAlias = true
     }
     private var pointsArr = mutableListOf<Point>()
+    private var splineArr = mutableListOf<Point>()
     private var check=0
-    fun drawAntialiasedLine(canvas: Canvas, startX: Float, startY: Float, endX: Float, endY: Float, paint: Paint) {
-        // Получаем абсолютные значения смещений по осям X и Y
-        val dx = Math.abs(endX - startX)
-        val dy = Math.abs(endY - startY)
-        var xst=startX
-        var yst=startY
-        var xend=endX
-        var yend=endY
 
-        val isSteep = dy > dx
-
-        // Если смещение по Y больше, меняем оси местами
-        if (isSteep) {
-            val newPair = swap(Pair(xst, yst))
-            xst = newPair.first
-            yst = newPair.second
-            val newEndPair = swap(Pair(xend, yend))
-            xend = newPair.first
-            yend = newPair.second
-        }
-
-        // Если направление по X - обратное, меняем начало и конец линии
-        if (startX > endX) {
-            val newPair = swap(Pair(xst, yst))
-            xst = newPair.first
-            yst = newPair.second
-        }
-
-        // Вычисляем смещения
-        val xIncrement = 1f
-        val yIncrement = if (isSteep) dx.toFloat() / dy else dy.toFloat() / dx
-
-        // Вычисляем начальную точку по Y
-        var y = yst
-        if (isSteep) {
-            y += if (yst < yend) 0.5f else -0.5f
-        } else {
-            y += if (yst > yend) 0.5f else -0.5f
-        }
-
-        // Инициализируем объект Path для рисования линии
-        val path = Path()
-        path.moveTo(xst, y)
-
-        // Перебираем точки по оси X
-        var x = xst
-        while (x < xend) {
-            // Определяем текущее смещение по Y
-            val currentY = if (isSteep) x else y
-            // Добавляем точку в Path
-            path.lineTo(x, currentY)
-
-            // Переходим к следующей точке по X
-            x += xIncrement
-            // Обновляем значение Y
-            y += yIncrement
-        }
-
-        // Рисуем Path с помощью заданной кисти
-        canvas.drawPath(path, paint)
-    }
-
-    // Функция для обмена значений двух переменных
-    private fun swap(pair: Pair<Float, Float>): Pair<Float, Float> {
-        return pair.second to pair.first
-    }
     fun drawBezierCurve(canvas: Canvas, paint: Paint?, startX: Float, startY: Float, endX: Float, endY: Float, controlX: Float, controlY: Float) {
         // Шаг по оси X для отрисовки точек кривой
         val step = 0.01f
@@ -120,7 +63,7 @@ class DrawingView(context: Context) : View(context) {
         // Рисуем последнюю точку
         canvas.drawPoint(endX, endY, paint!!)
     }
-    private data class Point(val x: Float, val y: Float)
+    private data class Point(var x: Float, var y: Float)
     fun change(){
         check=1
         invalidate()
@@ -149,26 +92,97 @@ class DrawingView(context: Context) : View(context) {
             for (point in pointsArr) {
                 canvas.drawCircle(point.x, point.y, 10f, paint)
             }
+            if (check==2)
+            {
+                linepaint.isAntiAlias=true
+            }
             for (i in 0 until pointsArr.size - 1)
             {
-                val controlPoint1 = Point((pointsArr[i].x + pointsArr[i+1].x) / 2, pointsArr[i].y)
-                if (check==1){
-                    drawBezierCurve(canvas, linepaint, pointsArr[i].x, pointsArr[i].y, pointsArr[i + 1].x, pointsArr[i + 1].y, controlPoint1.x, controlPoint1.y)
+                val controlPoint = Point((pointsArr[i].x + pointsArr[i+1].x) / 2, pointsArr[i].y)
+                if(splineArr.size<i+1){
+                    splineArr.add(Point(controlPoint.x, controlPoint.y))
                 }
-                else {
-                    drawAntialiasedLine(canvas, pointsArr[i].x, pointsArr[i].y, pointsArr[i + 1].x, pointsArr[i + 1].y, linepaint)//controlPoint1.x, controlPoint1.y)
+                for (i in 0 until splineArr.size)
+                {
+                    drawBezierCurve(canvas, linepaint, pointsArr[i].x, pointsArr[i].y, pointsArr[i + 1].x, pointsArr[i + 1].y, splineArr[i].x, splineArr[i].y)
                 }
+            }
+            for (spline in splineArr) {
+                canvas.drawCircle(spline.x, spline.y, 10f, splinepaint)
             }
         }
         super.onDraw(canvas)
-        toNormal()
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
+        if(check==1)
+        {
+            when (event.action) {
+                MotionEvent.ACTION_MOVE -> {
+                    var selectedPoint = findPoint(event.x, event.y)
+                    if (selectedPoint != -1) {
+                        // Перемещаем выбранную точку
+                        pointsArr[selectedPoint].x = event.x
+                        pointsArr[selectedPoint].y = event.y
+                        invalidate() // Перерисовываем холст
+                    }
+                    else {
+                        var selectedsplinePoint = findsplinePoint(event.x, event.y)
+                        if (selectedsplinePoint != -1) {
+                            // Перемещаем выбранную точку
+                            splineArr[selectedsplinePoint].x = event.x
+                            splineArr[selectedsplinePoint].y = event.y
+                            invalidate() // Перерисовываем холст
+                        }
+                    }
+                }
+            }
+        }
+        else if(check==2 && event.action == MotionEvent.ACTION_DOWN)
+        {
+            var selectedPoint = findPoint(event.x, event.y)
+            if (selectedPoint != -1) {
+                pointsArr.removeAt(selectedPoint)
+                if(selectedPoint<splineArr.size)
+                {
+                    splineArr.removeAt(selectedPoint)
+                }
+                else if (splineArr.size!=0){splineArr.removeAt(selectedPoint-1)}
+                invalidate()
+            }
+            else {
+                var selectedsplinePoint = findsplinePoint(event.x, event.y)
+                if (selectedsplinePoint != -1) {
+                    splineArr[selectedsplinePoint]= Point(pointsArr[selectedsplinePoint].x, pointsArr[selectedsplinePoint].y)
+                }
+                invalidate()
+            }
+        }
+        else if (event.action == MotionEvent.ACTION_DOWN) {
             pointsArr.add(Point(event.x, event.y))
             invalidate() // Перерисовываем view
         }
         return true
+    }
+    fun findsplinePoint(x: Float, y: Float): Int {
+        // Ищем точку, ближайшую к нажатию
+        for (i in 0 until splineArr.size) {
+            if (distance(splineArr[i].x, splineArr[i].y, x, y) <= 20f) {
+                return i // Возвращаем найденную точку
+            }
+        }
+        return -1 // Точка не найдена
+    }
+    fun findPoint(x: Float, y: Float): Int {
+        // Ищем точку, ближайшую к нажатию
+        for (i in 0 until pointsArr.size) {
+            if (distance(pointsArr[i].x, pointsArr[i].y, x, y) <= 20f) {
+                return i // Возвращаем найденную точку
+            }
+        }
+        return -1 // Точка не найдена
+    }
+    fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float {
+        return Math.sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toDouble()).toFloat()
     }
 }
 
@@ -183,14 +197,19 @@ class SecondaryActivity : AppCompatActivity() {
         drawingView = DrawingView(this)
         drawingContainer.addView(drawingView)
 
-        val btnDrawSpines = findViewById<Button>(R.id.btn_draw_splines)
-        val btnDrawAnti = findViewById<Button>(R.id.btn_draw_anti)
-        btnDrawSpines.setOnClickListener {
+        val drawSpines = findViewById<Button>(R.id.draw_splines)
+        val delPoints = findViewById<Button>(R.id.delete_points)
+        val tolines = findViewById<Button>(R.id.to_lines)
+        drawSpines.setOnClickListener {
             drawingView.change()
             //drawingContainer.invalidate()
         }
-        btnDrawAnti.setOnClickListener {
+        delPoints.setOnClickListener {
             drawingView.turnAntiAliason()
+            drawingContainer.invalidate()
+        }
+        tolines.setOnClickListener {
+            drawingView.toNormal()
             drawingContainer.invalidate()
         }
     }

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">PhotoEditor</string>
+    <string name="rotate">Rotate</string>
+    <string name="save">Save</string>
+    <string name="select_image">SELECT IMAGE</string>
+    <string name="next_page">NEXT PAGE</string>
+    <string name="connect_points">Соединить точки</string>
+    <string name="remove_points">Удалить точки</string>
+    <string name="to_lines">to lines</string>
 </resources>
