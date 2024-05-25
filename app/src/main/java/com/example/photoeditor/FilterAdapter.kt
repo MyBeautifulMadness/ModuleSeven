@@ -9,7 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.photoeditor.Filter
 import com.example.photoeditor.R
 
-class FilterAdapter(private val filters: List<Filter>, private val listener: OnFilterClickListener) : RecyclerView.Adapter<FilterAdapter.FilterViewHolder>() {
+class FilterAdapter(
+    private val filters: List<Filter>,
+    private val listener: OnFilterClickListener
+) : RecyclerView.Adapter<FilterAdapter.FilterViewHolder>() {
 
     interface OnFilterClickListener {
         fun onFilterClick(filter: Filter)
