@@ -42,7 +42,7 @@
         android:textSize="18sp" />
     <Button
         android:id="@+id/Nextpage"
-        android:onClick="kyrsibtn"
+        android:onClick="newAct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/PreviewImage"

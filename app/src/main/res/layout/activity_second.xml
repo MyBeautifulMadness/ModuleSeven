@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".SecondaryActivity"
-    tools:ignore="HardcodedText">
+    android:layout_height="match_parent">
 
-    <!--Button to open the image selector-->
-    <Button
-        android:id="@+id/SelectImage2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="SELECT IMAGE"
-        android:textColor="@android:color/white"
-        android:textSize="18sp" />
-
-    <!--ImageView to preview the selected image-->
-    <View
-        android:id="@+id/PreviewView2"
+    <FrameLayout
+        android:id="@+id/drawing_container"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_below="@id/SelectImage2"
-        android:layout_marginStart="16dp"
+        android:layout_centerInParent="true"
+        android:background="#ffffff"
+        android:padding="16dp">
+    </FrameLayout>
+    <Button
+        android:id="@+id/btn_draw_splines"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/drawing_container"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp" />
-
+        android:text="Соединить точки" />
+    <Button
+        android:id="@+id/btn_draw_anti"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_draw_splines"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Соединить точки" />
 </RelativeLayout>
